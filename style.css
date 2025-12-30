@@ -7,7 +7,7 @@
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      background: white;
       min-height: 100vh;
       color: #fff;
       padding: 20px;
@@ -35,11 +35,11 @@
     section {
       max-width: 600px;
       margin: 40px auto;
-      background: rgba(255, 255, 255, 0.05);
+      background: gainsboro;
       border-radius: 20px;
       padding: 30px;
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(221, 211, 211, 0.802);
     }
 
     section h2 {
@@ -238,7 +238,7 @@
     .coin-result {
       font-size: 2rem;
       font-weight: bold;
-      color: #ffd700;
+      color: #000000;
       min-height: 50px;
       display: flex;
       align-items: center;

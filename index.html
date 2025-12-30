@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Decision Maker</title>
   
-  
+  <link rel="stylesheet" href="style.css">
   
   
 </head>
@@ -17,7 +17,7 @@
 
   <!-- POLL GENERATOR -->
   <section>
-    <h2>🗳️ Poll Generator</h2>
+    <h2> Poll Generator</h2>
     <div class="poll-creator">
       <input type="text" id="pollQuestion" placeholder="Enter your question...">
       <div id="optionsList">
@@ -61,7 +61,7 @@
   </section>
 
   <footer>
-    <p>Made for fun decisions 🎉</p>
+    <p>Made for fun decisions </p>
   </footer>
 
   <script>
@@ -169,7 +169,7 @@
         coin.classList.remove('flipping');
         const isHeads = Math.random() < 0.5;
         coinFace.textContent = isHeads ? 'H' : 'T';
-        result.textContent = isHeads ? '👑 Heads!' : '🦅 Tails!';
+        result.textContent = isHeads ? ' Heads!' : ' Tails!';
       }, 600);
     }
 
@@ -272,7 +272,7 @@
         const normalizedAngle = (360 - (currentRotation % 360) + 90) % 360;
         const sliceAngle = 360 / wheelOptions.length;
         const winnerIndex = Math.floor(normalizedAngle / sliceAngle);
-        document.getElementById('wheelResult').textContent = `🎉 ${wheelOptions[winnerIndex]}!`;
+        document.getElementById('wheelResult').textContent = ` ${wheelOptions[winnerIndex]}!`;
       }, 4000);
     }
 
