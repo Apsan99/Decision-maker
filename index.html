@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decision Maker</title>
+  
+  
+  
+  
+</head>
+<body>
+  <header>
+    <h1> Decision Maker</h1>
+    <p> Simple and Fun decison making website </p>
+  </header>
+
+  <!-- POLL GENERATOR -->
+  <section>
+    <h2>🗳️ Poll Generator</h2>
+    <div class="poll-creator">
+      <input type="text" id="pollQuestion" placeholder="Enter your question...">
+      <div id="optionsList">
+        <div class="option-row">
+          <input type="text" placeholder="Option 1">
+        </div>
+        <div class="option-row">
+          <input type="text" placeholder="Option 2">
+        </div>
+      </div>
+      <button class="add-option-btn" onclick="addPollOption()">+ Add Option</button>
+      <button class="create-btn" onclick="createPoll()">Create Poll</button>
+    </div>
+    <div class="polls-list" id="pollsList"></div>
+  </section>
+
+  <!-- COIN FLIP -->
+  <section class="coin-section">
+    <h2>🪙 Coin Flip</h2>
+    <div class="coin" id="coin" onclick="flipCoin()">
+      <div class="coin-face">?</div>
+    </div>
+    <div class="coin-result" id="coinResult"></div>
+    <button onclick="flipCoin()">Flip Coin</button>
+  </section>
+
+  <!-- WHEEL SPINNER -->
+  <section class="wheel-section">
+    <h2>🎡 Wheel Spinner</h2>
+    <div class="wheel-controls">
+      <input type="text" id="wheelInput" placeholder="Add an option..." onkeypress="if(event.key === 'Enter') addWheelOption()">
+      <button onclick="addWheelOption()">Add</button>
+    </div>
+    <div class="tags" id="tags"></div>
+    <div class="wheel-wrapper">
+      <div class="wheel-pointer"></div>
+      <canvas id="wheelCanvas" width="300" height="300"></canvas>
+    </div>
+    <div class="wheel-result" id="wheelResult"></div>
+    <button onclick="spinWheel()">🎡 Spin!</button>
+  </section>
+
+  <footer>
+    <p>Made for fun decisions 🎉</p>
+  </footer>
+
+  <script>
+    // ==========         POLL GENERATOR             ==========
+    let polls = [];
+    let pollId = 0;
+
+    function addPollOption() {
+      const container = document.getElementById('optionsList');
+      const count = container.children.length + 1;
+      const row = document.createElement('div');
+      row.className = 'option-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Option ${count}">
+        <button class="remove-option" onclick="this.parentElement.remove()">×</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function createPoll() {
+      const question = document.getElementById('pollQuestion').value.trim();
+      const optionInputs = document.querySelectorAll('#optionsList input');
+      const options = Array.from(optionInputs).map(i => i.value.trim()).filter(v => v);
+
+      if (!question || options.length < 2) {
+        alert('Please enter a question and at least 2 options!');
+        return;
+      }
+
+      polls.push({
+        id: pollId++,
+        question,
+        options,
+        votes: new Array(options.length).fill(0)
+      });
+
+      document.getElementById('pollQuestion').value = '';
+      document.getElementById('optionsList').innerHTML = `
+        <div class="option-row"><input type="text" placeholder="Option 1"></div>
+        <div class="option-row"><input type="text" placeholder="Option 2"></div>
+      `;
+
+      renderPolls();
+    }
+
+    function vote(pollIndex, optionIndex) {
+      polls[pollIndex].votes[optionIndex]++;
+      renderPolls();
+    }
+
+    function resetPoll(pollIndex) {
+      polls[pollIndex].votes = new Array(polls[pollIndex].options.length).fill(0);
+      renderPolls();
+    }
+
+    function deletePoll(pollIndex) {
+      polls.splice(pollIndex, 1);
+      renderPolls();
+    }
+
+    function renderPolls() {
+      const container = document.getElementById('pollsList');
+      container.innerHTML = polls.map((poll, pIndex) => {
+        const totalVotes = poll.votes.reduce((a, b) => a + b, 0);
+
+        const optionsHtml = poll.options.map((opt, oIndex) => {
+          const votes = poll.votes[oIndex];
+          const percent = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+
+          return `
+            <div class="poll-option" onclick="vote(${pIndex}, ${oIndex})">
+              <div class="option-text">${opt}</div>
+              <div class="option-bar">
+                <div class="option-fill" style="width: ${percent}%"></div>
+              </div>
+              <div class="option-votes">${votes} votes (${percent}%)</div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="poll-card">
+            <div class="poll-question">${poll.question}</div>
+            ${optionsHtml}
+            <div class="poll-actions">
+              <button onclick="resetPoll(${pIndex})">Reset</button>
+              <button onclick="deletePoll(${pIndex})">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    
+    function flipCoin() {
+      const coin = document.getElementById('coin');
+      const coinFace = coin.querySelector('.coin-face');
+      const result = document.getElementById('coinResult');
+
+      coin.classList.add('flipping');
+      coinFace.textContent = '?';
+      result.textContent = '';
+
+      setTimeout(() => {
+        coin.classList.remove('flipping');
+        const isHeads = Math.random() < 0.5;
+        coinFace.textContent = isHeads ? 'H' : 'T';
+        result.textContent = isHeads ? '👑 Heads!' : '🦅 Tails!';
+      }, 600);
+    }
+
+    let wheelOptions = ['Option 1', 'Option 2', 'Option 3'];
+    let isSpinning = false;
+    let currentRotation = 0;
+
+    const colors = ['#e94560', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9', '#fd79a8'];
+
+    function addWheelOption() {
+      const input = document.getElementById('wheelInput');
+      const value = input.value.trim();
+      if (value && wheelOptions.length < 12) {
+        wheelOptions.push(value);
+        input.value = '';
+        renderTags();
+        renderWheel();
+      }
+    }
+
+    function removeWheelOption(index) {
+      if (wheelOptions.length > 2) {
+        wheelOptions.splice(index, 1);
+        renderTags();
+        renderWheel();
+      }
+    }
+
+    function renderTags() {
+      const container = document.getElementById('tags');
+      container.innerHTML = wheelOptions.map((opt, i) => `
+        <div class="tag">
+          ${opt}
+          <span onclick="removeWheelOption(${i})">×</span>
+        </div>
+      `).join('');
+    }
+
+    function renderWheel() {
+      const canvas = document.getElementById('wheelCanvas');
+      const ctx = canvas.getContext('2d');
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = 140;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const sliceAngle = (2 * Math.PI) / wheelOptions.length;
+
+      wheelOptions.forEach((option, i) => {
+        const startAngle = i * sliceAngle - Math.PI / 2;
+        const endAngle = startAngle + sliceAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(startAngle + sliceAngle / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 14px Segoe UI';
+        ctx.fillText(option.substring(0, 12), radius - 15, 5);
+        ctx.restore();
+      });
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fill();
+      ctx.strokeStyle = '#e94560';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    function spinWheel() {
+      if (isSpinning || wheelOptions.length < 2) return;
+
+      isSpinning = true;
+      document.getElementById('wheelResult').textContent = '';
+
+      const canvas = document.getElementById('wheelCanvas');
+      const extraSpins = 5 + Math.random() * 5;
+      const randomAngle = Math.random() * 360;
+      const totalRotation = extraSpins * 360 + randomAngle;
+
+      currentRotation += totalRotation;
+      canvas.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+      canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+      setTimeout(() => {
+        isSpinning = false;
+        const normalizedAngle = (360 - (currentRotation % 360) + 90) % 360;
+        const sliceAngle = 360 / wheelOptions.length;
+        const winnerIndex = Math.floor(normalizedAngle / sliceAngle);
+        document.getElementById('wheelResult').textContent = `🎉 ${wheelOptions[winnerIndex]}!`;
+      }, 4000);
+    }
+
+    // Initialize
+    renderTags();
+    renderWheel();
+  </script>
+</body>
+</html>
